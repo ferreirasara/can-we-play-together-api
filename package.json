@@ -1,0 +1,28 @@
+{
+  "name": "can-we-play-together-api",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "yarn server",
+    "server": "npx ts-node src/index.ts",
+    "test": "jest --no-cache"
+  },
+  "repository": "https://github.com/ferreirasara/can-we-play-together-api.git",
+  "author": "Sara Ferreira <ferreirasara1501@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16 <17"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.7.14",
+    "@types/node-fetch": "^2.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "node-fetch": "2.6.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.2"
+  }
+}
