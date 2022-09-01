@@ -3,44 +3,29 @@ import { OwnedGamesResponse, GameDetailsResponse, GameDetails } from '../@types/
 import { multiplayerCategories } from '../utils/utils';
 
 const sendOwnedGamesRequest = async (userId: string): Promise<OwnedGamesResponse | undefined> => {
-  try {
-    const ownedGamesUrl = `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${userId}&format=json`
-    const response = await fetch(ownedGamesUrl);
+  const ownedGamesUrl = `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${userId}&format=json`
+  const response = await fetch(ownedGamesUrl);
 
-    return await response.json();
-  } catch (error: any) {
-    console.log(error);
-    return undefined;
-  }
+  return await response.json();
 }
 
 const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsResponse | undefined> => {
-  try {
-    const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
-    const response = await fetch(gameDetailsUrl);
+  const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+  const response = await fetch(gameDetailsUrl);
 
-    return await response.json();
-  } catch (error: any) {
-    console.log(error);
-    return undefined;
-  }
+  return await response.json();
 }
 
 const getAllGamesInCommon = async (userId1: string, userId2: string) => {
-  try {
-    const ownedGamesUser1: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId1);
-    const ownedGamesUser2: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId2);
+  const ownedGamesUser1: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId1);
+  const ownedGamesUser2: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId2);
 
-    const appIds1 = ownedGamesUser1?.response?.games?.map(cur => cur?.appid);
-    const appIds2 = ownedGamesUser2?.response?.games?.map(cur => cur?.appid);
+  const appIds1 = ownedGamesUser1?.response?.games?.map(cur => cur?.appid);
+  const appIds2 = ownedGamesUser2?.response?.games?.map(cur => cur?.appid);
 
-    const gamesInCommon = appIds1?.filter(value => appIds2?.includes(value));
+  const gamesInCommon = appIds1?.filter(value => appIds2?.includes(value));
 
-    return gamesInCommon;
-  } catch (error: any) {
-    console.log(error);
-    return []
-  }
+  return gamesInCommon;
 }
 
 const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
