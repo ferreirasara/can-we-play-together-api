@@ -14,15 +14,25 @@ export type OwnedGamesResponse = {
 
 export type GameDetailsResponse = Record<string, {
   success: boolean,
-  data: GameDetails
+  data: {
+    name: string,
+    short_description: string,
+    categories: {
+      id: number,
+      description: string
+    }[]
+    header_image: string,
+    genres: {
+      id: number,
+      description: string
+    }[]
+  }
 }>
 
 export type GameDetails = {
   name: string,
   short_description: string,
-  categories: {
-    id: number,
-    description: string
-  }[]
-  background: string,
+  categories: string[]
+  header_image: string,
+  genres: string[]
 }

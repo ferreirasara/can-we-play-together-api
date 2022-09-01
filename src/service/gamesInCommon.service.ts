@@ -33,7 +33,13 @@ const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
 
   for (let i = 0; i < appIds?.length; i++) {
     const gameDetails = await sendGameDetailsRequest(appIds[i]);
-    if (gameDetails) details?.push(gameDetails[appIds[i]]?.data);
+    if (gameDetails) details?.push({
+      categories: gameDetails[appIds[i]]?.data?.categories?.filter(cur => !!multiplayerCategories?.includes(cur.description))?.map(cur => cur?.description),
+      genres: gameDetails[appIds[i]]?.data?.genres?.map(cur => cur?.description),
+      header_image: gameDetails[appIds[i]]?.data?.header_image,
+      name: gameDetails[appIds[i]]?.data?.name,
+      short_description: gameDetails[appIds[i]]?.data?.short_description,
+    });
   }
 
   return details;
@@ -48,9 +54,7 @@ export const gamesInCommonService = async (req: any, res: any, next: any) => {
     const allGamesInCommonDetails = allGamesInCommon ? await getGamesDetails(allGamesInCommon) : undefined;
 
     const multiplayerGames = allGamesInCommonDetails?.filter(game =>
-      game?.categories?.some(category =>
-        multiplayerCategories.includes(category?.description)
-      )
+      game?.categories?.some(category => multiplayerCategories.includes(category))
     );
 
     res.send({ success: true, gamesInCommon: multiplayerGames });
