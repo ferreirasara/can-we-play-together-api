@@ -1,6 +1,14 @@
+import { intersection } from 'lodash';
 import fetch from 'node-fetch';
 import { OwnedGamesResponse, GameDetailsResponse, GameDetails } from '../@types/types';
-import { multiplayerCategories } from '../utils/utils';
+import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
+
+const sendSteamIDRequest = async (username: string): Promise<string> => {
+  const steamIDUrl = `https://www.steamidfinder.com/lookup/${username}/`;
+  const response = await fetch(steamIDUrl);
+
+  return response?.text();
+}
 
 const sendOwnedGamesRequest = async (userId: string): Promise<OwnedGamesResponse | undefined> => {
   const ownedGamesUrl = `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_API_KEY}&steamid=${userId}&format=json`
@@ -23,7 +31,7 @@ const getAllGamesInCommon = async (userId1: string, userId2: string) => {
   const appIds1 = ownedGamesUser1?.response?.games?.map(cur => cur?.appid);
   const appIds2 = ownedGamesUser2?.response?.games?.map(cur => cur?.appid);
 
-  const gamesInCommon = appIds1?.filter(value => appIds2?.includes(value));
+  const gamesInCommon = intersection(appIds1, appIds2);
 
   return gamesInCommon;
 }
@@ -46,16 +54,41 @@ const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
 }
 
 export const gamesInCommonService = async (req: any, res: any, next: any) => {
-  const userId1 = req.params.userId1;
-  const userId2 = req.params.userId2;
+  const username1 = req.params.username1;
+  const username2 = req.params.username2;
 
   try {
+    let text = await sendSteamIDRequest(username1);
+    const userId1 = getUserIdFromHTML(text);
+    text = await sendSteamIDRequest(username2);
+    const userId2 = getUserIdFromHTML(text);
+
+    if (!userId1) {
+      res.send({ success: false, message: `Could not get steamid for username ${username1}` })
+      return;
+    }
+    if (!userId2) {
+      res.send({ success: false, message: `Could not get steamid for username ${username2}` })
+      return;
+    }
+
     const allGamesInCommon = await getAllGamesInCommon(userId1, userId2);
+
+    if (!allGamesInCommon?.length) {
+      res.send({ success: false, message: "Could not find common games." })
+      return;
+    }
+
     const allGamesInCommonDetails = allGamesInCommon ? await getGamesDetails(allGamesInCommon) : undefined;
 
     const multiplayerGames = allGamesInCommonDetails?.filter(game =>
       game?.categories?.some(category => multiplayerCategories.includes(category))
     );
+
+    if (!multiplayerGames?.length) {
+      res.send({ success: false, message: "Could not find multiplayer games." })
+      return;
+    }
 
     res.send({ success: true, gamesInCommon: multiplayerGames });
   } catch (error) {
