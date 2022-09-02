@@ -2,6 +2,7 @@ import { intersection } from 'lodash';
 import fetch from 'node-fetch';
 import { OwnedGamesResponse, GameDetailsResponse, GameDetails } from '../@types/types';
 import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
+import { Request, Response } from 'express';
 
 const sendSteamIDRequest = async (username: string): Promise<string> => {
   const steamIDUrl = `https://www.steamidfinder.com/lookup/${username}/`;
@@ -53,7 +54,7 @@ const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
   return details;
 }
 
-export const gamesInCommonService = async (req: any, res: any, next: any) => {
+export const gamesInCommonService = async (req: Request, res: Response) => {
   const username1 = req.params.username1;
   const username2 = req.params.username2;
 
@@ -64,18 +65,18 @@ export const gamesInCommonService = async (req: any, res: any, next: any) => {
     const userId2 = getUserIdFromHTML(text);
 
     if (!userId1) {
-      res.send({ success: false, message: `Could not get steamid for username ${username1}` })
+      res.status(500).send({ success: false, message: `Could not get steamid for username ${username1}` })
       return;
     }
     if (!userId2) {
-      res.send({ success: false, message: `Could not get steamid for username ${username2}` })
+      res.status(500).send({ success: false, message: `Could not get steamid for username ${username2}` })
       return;
     }
 
     const allGamesInCommon = await getAllGamesInCommon(userId1, userId2);
 
     if (!allGamesInCommon?.length) {
-      res.send({ success: false, message: "Could not find common games." })
+      res.status(500).send({ success: false, message: "Could not find common games." })
       return;
     }
 
@@ -86,13 +87,13 @@ export const gamesInCommonService = async (req: any, res: any, next: any) => {
     );
 
     if (!multiplayerGames?.length) {
-      res.send({ success: false, message: "Could not find multiplayer games." })
+      res.status(500).send({ success: false, message: "Could not find multiplayer games." })
       return;
     }
 
-    res.send({ success: true, gamesInCommon: multiplayerGames });
+    res.status(200).send({ success: true, gamesInCommon: multiplayerGames });
   } catch (error) {
     console.log(error);
-    res.send({ success: false, message: `Erro: ${(error as Error).message}` });
+    res.status(500).send({ success: false, message: `Erro: ${(error as Error).message}` });
   }
 }

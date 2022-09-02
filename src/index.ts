@@ -1,10 +1,25 @@
 import express from "express";
 import cors from "cors";
 import { gamesInCommonService } from "./service/gamesInCommon.service";
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
 require("dotenv").config({ path: ".env" });
 
 // Create a new express application instance
 const app: express.Application = express();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Tracing.Integrations.Express({ app }),
+  ],
+  tracesSampleRate: 1.0,
+  environment: process.env.NODE_ENV,
+});
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -17,8 +32,19 @@ app.get("/gamesInCommon/:username1/:username2", [
 // The port the express app will listen on
 const port = process.env.PORT || 8080;
 
+app.use(Sentry.Handlers.errorHandler());
+
+// Optional fallthrough error handler
+app.use(function onError(err: any, req: any, res: any, next: any) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + "\n");
+});
 
 // Serve the application at the given port
 app.listen(port, () => {
-  console.log(`Listening at ${process.env.NODE_ENV !== "production" ? "http://localhost:" : "https://api-sdpm-simulator.herokuapp.com:"}${port}/`);
+  console.log(`Listening at ${process.env.NODE_ENV !== "production"
+    ? `http://localhost:${port}`
+    : "https://can-we-play-together.onrender.com"}`);
 });
