@@ -51,6 +51,7 @@ const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
   for (let i = 0; i < appIds?.length; i++) {
     const gameDetails = await sendGameDetailsRequest(appIds[i]);
     if (gameDetails) details?.push({
+      appId: appIds[i],
       categories: gameDetails[appIds[i]]?.data?.categories?.filter(cur => !!multiplayerCategories?.includes(cur.description))?.map(cur => cur?.description),
       genres: gameDetails[appIds[i]]?.data?.genres?.map(cur => cur?.description),
       header_image: gameDetails[appIds[i]]?.data?.header_image,
