@@ -3,6 +3,14 @@ import fetch from 'node-fetch';
 import { OwnedGamesResponse, GameDetailsResponse, GameDetails } from '../@types/types';
 import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
 import { Request, Response } from 'express';
+import Rollbar from 'rollbar';
+require("dotenv").config({ path: ".env" });
+
+const rollbar = new Rollbar({
+  accessToken: process.env.ROLLBAR_TOKEN,
+  captureUncaught: true,
+  captureUnhandledRejections: true
+});
 
 const sendSteamIDRequest = async (username: string): Promise<string> => {
   const steamIDUrl = `https://www.steamidfinder.com/lookup/${username}/`;
@@ -65,18 +73,24 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
     const userId2 = getUserIdFromHTML(text);
 
     if (!userId1) {
-      res.status(500).send({ success: false, message: `Could not get steamid for username ${username1}` })
+      const message = `Could not get steamid for username ${username1}`
+      rollbar.log(`[gamesInCommonService] ${message} - UserID1: ${userId1} UserID2: ${userId2}`);
+      res.status(500).send({ success: false, message })
       return;
     }
     if (!userId2) {
-      res.status(500).send({ success: false, message: `Could not get steamid for username ${username2}` })
+      const message = `Could not get steamid for username ${username2}`
+      rollbar.log(`[gamesInCommonService] ${message} - UserID1: ${userId1} UserID2: ${userId2}`);
+      res.status(500).send({ success: false, message })
       return;
     }
 
     const allGamesInCommon = await getAllGamesInCommon(userId1, userId2);
 
     if (!allGamesInCommon?.length) {
-      res.status(500).send({ success: false, message: "Could not find common games." })
+      const message = "Could not find common games."
+      rollbar.log(`[gamesInCommonService] ${message} - UserID1: ${userId1} UserID2: ${userId2}`);
+      res.status(500).send({ success: false, message })
       return;
     }
 
@@ -87,13 +101,16 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
     );
 
     if (!multiplayerGames?.length) {
-      res.status(500).send({ success: false, message: "Could not find multiplayer games." })
+      const message = "Could not find multiplayer games."
+      rollbar.log(`[gamesInCommonService] ${message} - UserID1: ${userId1} UserID2: ${userId2}`);
+      res.status(500).send({ success: false, message })
       return;
     }
 
     res.status(200).send({ success: true, gamesInCommon: multiplayerGames });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
+    rollbar.error(error);
     res.status(500).send({ success: false, message: `Erro: ${(error as Error).message}` });
   }
 }
