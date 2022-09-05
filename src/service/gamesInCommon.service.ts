@@ -27,7 +27,7 @@ const sendOwnedGamesRequest = async (userId: string): Promise<OwnedGamesResponse
 }
 
 const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsResponse | undefined> => {
-  const gameDetailsUrl = `https://steamspy.com/api.php?request=appdetails&appid=${appId}`
+  const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
   const response = await fetch(gameDetailsUrl);
 
   return await response.json();
