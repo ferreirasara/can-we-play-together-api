@@ -27,10 +27,17 @@ const sendOwnedGamesRequest = async (userId: string): Promise<OwnedGamesResponse
 }
 
 const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsResponse | undefined> => {
-  const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
-  const response = await fetch(gameDetailsUrl);
+  try {
+    const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+    const response = await fetch(gameDetailsUrl);
 
-  return await response.json();
+    return await response.json();
+  } catch (error: any) {
+    console.log(error);
+    rollbar.error(error);
+
+    return undefined;
+  }
 }
 
 const getAllGamesInCommon = async (userId1: string, userId2: string) => {
