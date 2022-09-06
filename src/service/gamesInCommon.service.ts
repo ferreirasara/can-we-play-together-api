@@ -53,10 +53,8 @@ const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
     if (gameDetails) details?.push({
       appId: appIds[i],
       categories: gameDetails[appIds[i]]?.data?.categories?.filter(cur => !!multiplayerCategories?.includes(cur.description))?.map(cur => cur?.description),
-      genres: gameDetails[appIds[i]]?.data?.genres?.map(cur => cur?.description),
       header_image: gameDetails[appIds[i]]?.data?.header_image,
       name: gameDetails[appIds[i]]?.data?.name,
-      short_description: gameDetails[appIds[i]]?.data?.short_description,
     });
   }
 

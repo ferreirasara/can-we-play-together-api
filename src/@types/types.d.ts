@@ -32,8 +32,6 @@ export type GameDetailsResponse = Record<string, {
 export type GameDetails = {
   appId: number,
   name: string,
-  short_description: string,
   categories: string[]
   header_image: string,
-  genres: string[]
 }
