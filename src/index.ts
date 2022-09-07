@@ -5,21 +5,28 @@ import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 require("dotenv").config({ path: ".env" });
 
+if (!process.env.STEAM_API_KEY) {
+  console.log("No Steam API key founded.");
+  process.exit();
+}
+
 // Create a new express application instance
 const app: express.Application = express();
 
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new Tracing.Integrations.Express({ app }),
-  ],
-  tracesSampleRate: 1.0,
-  environment: process.env.NODE_ENV,
-});
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Tracing.Integrations.Express({ app }),
+    ],
+    tracesSampleRate: 1.0,
+    environment: process.env.NODE_ENV,
+  });
 
-app.use(Sentry.Handlers.requestHandler());
-app.use(Sentry.Handlers.tracingHandler());
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -29,18 +36,20 @@ app.get("/gamesInCommon/:username1/:username2", [
   gamesInCommonService,
 ])
 
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+
+  // Optional fallthrough error handler
+  app.use(function onError(err: any, req: any, res: any, next: any) {
+    // The error id is attached to `res.sentry` to be returned
+    // and optionally displayed to the user for support.
+    res.statusCode = 500;
+    res.end(res.sentry + "\n");
+  });
+}
+
 // The port the express app will listen on
 const port = process.env.PORT || 8080;
-
-app.use(Sentry.Handlers.errorHandler());
-
-// Optional fallthrough error handler
-app.use(function onError(err: any, req: any, res: any, next: any) {
-  // The error id is attached to `res.sentry` to be returned
-  // and optionally displayed to the user for support.
-  res.statusCode = 500;
-  res.end(res.sentry + "\n");
-});
 
 // Serve the application at the given port
 app.listen(port, () => {
