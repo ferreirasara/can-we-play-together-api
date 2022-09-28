@@ -69,4 +69,4 @@ app.listen(port, async () => {
     : "https://can-we-play-together.onrender.com"}`);
 });
 
-updateGamesInDB();
+// updateGamesInDB();
