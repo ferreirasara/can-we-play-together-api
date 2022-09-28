@@ -3,12 +3,23 @@ import cors from "cors";
 import { gamesInCommonService } from "./service/gamesInCommon.service";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
+import DAO from "./dao/DAO";
+import cron from 'node-cron';
+import { updateGamesInDB } from "./service/updateGames.service";
 require("dotenv").config({ path: ".env" });
 
 if (!process.env.STEAM_API_KEY) {
   console.log("No Steam API key founded.");
   process.exit();
 }
+
+// Initialize DB
+const dao = new DAO();
+dao.initializeDB().then().catch(error => console.log(error));
+
+// cron.schedule('0 0 * * sun', () => {
+
+// });
 
 // Create a new express application instance
 const app: express.Application = express();
@@ -52,8 +63,10 @@ if (process.env.SENTRY_DSN) {
 const port = process.env.PORT || 8080;
 
 // Serve the application at the given port
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Listening at ${process.env.NODE_ENV !== "production"
     ? `http://localhost:${port}`
     : "https://can-we-play-together.onrender.com"}`);
 });
+
+updateGamesInDB();

@@ -35,3 +35,12 @@ export type GameDetails = {
   categories: string[]
   header_image: string,
 }
+
+export type AllGamesResponse = {
+  applist: {
+    apps: {
+      appid: number,
+      name: string,
+    }[]
+  }
+}
