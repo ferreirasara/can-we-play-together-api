@@ -1,5 +1,3 @@
-import { uniq } from "lodash";
-
 export const multiplayerCategories = [
   'Multi-player',
   'Co-op',
