@@ -1,3 +1,4 @@
+import Bugsnag from '@bugsnag/js';
 import fetch from 'node-fetch';
 import { AllGamesResponse, GameDetails, GameDetailsResponse } from '../@types/types';
 import DAO from '../dao/DAO';
@@ -17,6 +18,7 @@ const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsRespons
     return await response.json();
   } catch (error: any) {
     console.log(error);
+    Bugsnag?.notify(error);
     return undefined;
   }
 }
@@ -41,13 +43,13 @@ export const updateGamesInDB = async () => {
 
   let inserted = 0;
   for (let i = 0; i < allGamesLength; i++) {
-    // console.log(`[updateGamesInDB] ${i} of ${allGamesLength}`);
+    console.log(`[updateGamesInDB] ${i} of ${allGamesLength}`);
     const gameDetails = await getGamesDetails(allGames[i]?.appid);
     if (!!gameDetails?.categories?.length && !!gameDetails?.name && !!gameDetails?.header_image) {
       await dao?.insertGame(gameDetails);
       inserted++;
     } else {
-      // console.log(`[updateGamesInDB] ${allGames[i]?.appid} - ${allGames[i]?.name} doesn't have details`);
+      console.log(`[updateGamesInDB] ${allGames[i]?.appid} - ${allGames[i]?.name} doesn't have details`);
     }
   }
   console.log(`[updateGamesInDB] inserted ${inserted} games!`)

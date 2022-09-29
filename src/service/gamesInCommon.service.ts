@@ -4,6 +4,7 @@ import { OwnedGamesResponse, GameDetails } from '../@types/types';
 import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
 import { Request, Response } from 'express';
 import DAO from '../dao/DAO';
+import Bugsnag from '@bugsnag/js';
 require("dotenv").config({ path: ".env" });
 
 
@@ -62,11 +63,13 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
 
     if (!userId1) {
       const message = `Could not get steamid for username ${username1}`
+      Bugsnag?.notify({ errorClass: "STEAMID", errorMessage: message }, (event) => event?.addMetadata('data', { username1 }));
       res.status(500).send({ success: false, message })
       return;
     }
     if (!userId2) {
       const message = `Could not get steamid for username ${username2}`
+      Bugsnag?.notify({ errorClass: "STEAMID", errorMessage: message }, (event) => event?.addMetadata('data', { username2 }));
       res.status(500).send({ success: false, message })
       return;
     }
@@ -75,6 +78,7 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
 
     if (!allGamesInCommon?.length) {
       const message = "Could not find common games."
+      Bugsnag?.notify({ errorClass: "COMMON_GAMES", errorMessage: message }, (event) => event?.addMetadata('data', { username1, username2 }));
       res.status(500).send({ success: false, message })
       return;
     }
@@ -87,6 +91,7 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
 
     if (!multiplayerGames?.length) {
       const message = "Could not find multiplayer games."
+      Bugsnag?.notify({ errorClass: "MULTIPLAYER_GAMES", errorMessage: message }, (event) => event?.addMetadata('data', { username1, username2 }));
       res.status(500).send({ success: false, message })
       return;
     }
@@ -94,6 +99,7 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
     res.status(200).send({ success: true, gamesInCommon: multiplayerGames });
   } catch (error: any) {
     console.log(error);
+    Bugsnag?.notify(error);
     res.status(500).send({ success: false, message: `Erro: ${(error as Error).message}` });
   }
 }
