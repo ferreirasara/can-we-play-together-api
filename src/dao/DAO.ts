@@ -5,6 +5,7 @@ export default class DAO {
 
   public connect() {
     const connectionString = process.env.DATABASE_URL
+    console.log("🚀 | DAO | connect | connectionString", connectionString);
     return new Pool({ connectionString, ssl: true });
   }
 
