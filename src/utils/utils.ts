@@ -1,4 +1,6 @@
+import { isArray } from 'lodash';
 import fetch from 'node-fetch';
+import { ContType } from '../@types/types';
 
 export const multiplayerCategories = [
   'Multi-player',
@@ -25,4 +27,35 @@ export const sendSlackReport = async (message: string) => {
   }
 
   await fetch(allGamesUrl, { headers });
+}
+
+export const calcContType = (arr: string[], orderBy: 'cont' | 'name' = 'cont'): ContType[] => {
+  if (!isArray(arr)) return []
+  const contTypes: ContType[] = []
+  const valueToIndexMap: Record<string, number> = {}
+
+  for (const cur of arr) {
+    if (cur) {
+      const ind = valueToIndexMap[cur]
+      if (ind || ind === 0) {
+        contTypes[ind].cont++
+      } else {
+        contTypes.push({ name: cur, cont: 1 })
+        valueToIndexMap[cur] = contTypes.length - 1
+      }
+    }
+  }
+  return orderObjectsByField(contTypes, orderBy);
+}
+
+export function orderObjectsByField<T extends Record<string, any>>(objs: T[], field: keyof T, ascending?: boolean): T[] {
+  return objs.sort((a, b) => {
+    let comparison = 0;
+    if (a[field] > b[field]) {
+      comparison = ascending ? 1 : -1;
+    } else if (a[field] < b[field]) {
+      comparison = ascending ? -1 : 1;
+    }
+    return comparison;
+  })
 }

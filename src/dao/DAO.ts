@@ -5,7 +5,6 @@ export default class DAO {
 
   public connect() {
     const connectionString = process.env.DATABASE_URL
-    console.log("🚀 | DAO | connect | connectionString", connectionString);
     return new Pool({ connectionString, ssl: true });
   }
 
@@ -130,5 +129,11 @@ export default class DAO {
     const allAppIdsQuery = `SELECT "Apps"."appid" FROM "Apps"`;
     const res = await this.query({ query: allAppIdsQuery, caller: "allAppIdsQuery" });
     return res?.rows?.map((cur: { appid: number }) => cur?.appid) || [];
+  }
+
+  public async getAllCategories(): Promise<string[][]> {
+    const allCategoriesQuery = `SELECT "Games"."categories" FROM "Games"`;
+    const res = await this.query({ query: allCategoriesQuery, caller: "allCategoriesQuery" });
+    return res?.rows?.map((cur: { categories: string[] }) => cur?.categories) || [];
   }
 }

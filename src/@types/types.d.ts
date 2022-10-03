@@ -44,3 +44,8 @@ export type AllGamesResponse = {
     }[]
   }
 }
+
+export interface ContType {
+  name: string
+  cont: number
+}

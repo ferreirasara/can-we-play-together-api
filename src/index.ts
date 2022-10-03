@@ -5,7 +5,7 @@ import DAO from "./dao/DAO";
 import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
 import { updateGamesInDB } from "./service/updateGames.service";
-import { appsCountService, gamesCountService } from "./service/stats.service";
+import { statsService } from "./service/stats.service";
 require("dotenv").config({ path: ".env" });
 
 if (!process.env.STEAM_API_KEY) {
@@ -42,12 +42,8 @@ app.get("/gamesInCommon/:username1/:username2", [
   gamesInCommonService,
 ])
 
-app.get("/stats/gamesCount", [
-  gamesCountService,
-])
-
-app.get("/stats/appsCount", [
-  appsCountService,
+app.get("/stats", [
+  statsService,
 ])
 
 if (middleware) app.use(middleware?.errorHandler)
@@ -60,4 +56,4 @@ app.listen(port, async () => {
     : "https://can-we-play-together-api.onrender.com"}`);
 });
 
-// updateGamesInDB();
+updateGamesInDB();
