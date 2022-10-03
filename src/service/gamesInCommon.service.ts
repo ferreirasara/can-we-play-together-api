@@ -41,7 +41,7 @@ export const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> 
   for (let i = 0; i < appIds?.length; i++) {
     const gameDetails = await dao.getGame(appIds[i]);
     if (gameDetails) details?.push({
-      appId: appIds[i],
+      appid: appIds[i],
       categories: gameDetails?.categories,
       header_image: gameDetails?.header_image,
       name: gameDetails?.name,

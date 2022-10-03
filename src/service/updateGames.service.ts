@@ -1,7 +1,9 @@
 import Bugsnag from '@bugsnag/js';
+import { uniq } from 'lodash';
 import fetch from 'node-fetch';
 import { AllGamesResponse, GameDetails, GameDetailsResponse } from '../@types/types';
 import DAO from '../dao/DAO';
+import { sendSlackReport } from '../utils/utils';
 
 const sendAllGamesRequest = async (): Promise<AllGamesResponse> => {
   const allGamesUrl = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json"
@@ -10,9 +12,9 @@ const sendAllGamesRequest = async (): Promise<AllGamesResponse> => {
   return await response.json();
 }
 
-const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsResponse | undefined> => {
+const sendGameDetailsRequest = async (appid: number): Promise<GameDetailsResponse | undefined> => {
   try {
-    const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+    const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}`
     const response = await fetch(gameDetailsUrl);
 
     return await response.json();
@@ -23,13 +25,13 @@ const sendGameDetailsRequest = async (appId: number): Promise<GameDetailsRespons
   }
 }
 
-const getGamesDetails = async (appId: number): Promise<GameDetails> => {
-  const gameDetails = await sendGameDetailsRequest(appId);
+const getGamesDetails = async (appid: number): Promise<GameDetails> => {
+  const gameDetails = await sendGameDetailsRequest(appid);
   return {
-    appId: appId,
-    categories: gameDetails?.[appId]?.data?.categories?.map(cur => cur?.description) || [],
-    header_image: gameDetails?.[appId]?.data?.header_image || "",
-    name: gameDetails?.[appId]?.data?.name || "",
+    appid: appid,
+    categories: gameDetails?.[appid]?.data?.categories?.map(cur => cur?.description) || [],
+    header_image: gameDetails?.[appid]?.data?.header_image || "",
+    name: gameDetails?.[appid]?.data?.name || "",
   }
 }
 
@@ -37,20 +39,27 @@ export const updateGamesInDB = async () => {
   const dao = new DAO();
   const allGamesResponse = await sendAllGamesRequest();
   const allGamesInDB = await dao.getAllGameIds();
+  const allAppsInDB = await dao.getAllAppIds();
+  const allExistentAppids = uniq([...allGamesInDB, ...allAppsInDB]);
 
-  const allGames = allGamesResponse?.applist?.apps?.filter(cur => !!cur?.name && !allGamesInDB?.includes(cur?.appid));
+  const allGames = allGamesResponse?.applist?.apps?.filter(cur => !!cur?.name && !allExistentAppids?.includes(cur?.appid));
   const allGamesLength = allGames?.length;
 
-  let inserted = 0;
+  sendSlackReport(`Initializing updateGamesInDB. There are ${allGamesInDB?.length} games and ${allAppsInDB?.length} apps in database. ${allGamesLength} games and app aren't on database.`);
+
+  let newGamesInserted = 0;
+  let newAppsInserted = 0;
   for (let i = 0; i < allGamesLength; i++) {
-    console.log(`[updateGamesInDB] ${i} of ${allGamesLength}`);
+    if (i % 10 === 0) console.log(`[updateGamesInDB] ${i + 1} of ${allGamesLength}`);
     const gameDetails = await getGamesDetails(allGames[i]?.appid);
     if (!!gameDetails?.categories?.length && !!gameDetails?.name && !!gameDetails?.header_image) {
       await dao?.insertGame(gameDetails);
-      inserted++;
+      newGamesInserted++;
     } else {
-      console.log(`[updateGamesInDB] ${allGames[i]?.appid} - ${allGames[i]?.name} doesn't have details`);
+      await dao?.insertApp(allGames[i]);
+      newAppsInserted++;
     }
   }
-  console.log(`[updateGamesInDB] inserted ${inserted} games!`)
+  sendSlackReport(`Finish updateGamesInDB. Inserted ${newGamesInserted} games and ${newAppsInserted} apps!`);
+  console.log(`[updateGamesInDB] inserted ${newGamesInserted} games and ${newAppsInserted} apps!`)
 }
