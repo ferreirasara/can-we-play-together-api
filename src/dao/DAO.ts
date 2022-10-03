@@ -5,7 +5,7 @@ export default class DAO {
 
   public connect() {
     const connectionString = process.env.DATABASE_URL
-    return new Pool({ connectionString, ssl: process.env.NODE_ENV !== "production" });
+    return new Pool({ connectionString, ssl: true });
   }
 
   public async query(args: { query: string, values?: any[], caller: string }) {
