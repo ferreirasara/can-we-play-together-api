@@ -5,6 +5,7 @@ import DAO from "./dao/DAO";
 import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
 import { updateGamesInDB } from "./service/updateGames.service";
+import { appsCountService, gamesCountService } from "./service/stats.service";
 require("dotenv").config({ path: ".env" });
 
 if (!process.env.STEAM_API_KEY) {
@@ -15,10 +16,14 @@ if (!process.env.STEAM_API_KEY) {
 const dao = new DAO();
 dao.initializeDB().then().catch(error => console.log(error));
 
-Bugsnag.start({
-  apiKey: process.env.BUGSNAG_API_KEY || "",
-  plugins: [BugsnagPluginExpress]
-})
+try {
+  Bugsnag.start({
+    apiKey: process.env.BUGSNAG_API_KEY || "",
+    plugins: [BugsnagPluginExpress]
+  })
+} catch (error: any) {
+  console.log(error);
+}
 
 // cron.schedule('0 0 * * sun', () => {
 
@@ -35,6 +40,14 @@ app.use(express.urlencoded({ limit: '50mb', extended: false }));
 
 app.get("/gamesInCommon/:username1/:username2", [
   gamesInCommonService,
+])
+
+app.get("/stats/gamesCount", [
+  gamesCountService,
+])
+
+app.get("/stats/appsCount", [
+  appsCountService,
 ])
 
 if (middleware) app.use(middleware?.errorHandler)
