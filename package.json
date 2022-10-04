@@ -10,9 +10,6 @@
   "repository": "https://github.com/ferreirasara/can-we-play-together-api.git",
   "author": "Sara Ferreira <ferreirasara1501@gmail.com>",
   "license": "MIT",
-  "engines": {
-    "node": ">=16 <17"
-  },
   "dependencies": {
     "@bugsnag/js": "^7.18.0",
     "@bugsnag/plugin-express": "^7.18.0",
