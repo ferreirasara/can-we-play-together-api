@@ -25,7 +25,7 @@ const sendGameDetailsRequest = async (appid: number): Promise<GameDetailsRespons
   }
 }
 
-const getGamesDetails = async (appid: number): Promise<GameDetails> => {
+export const getGamesDetailsFromAPI = async (appid: number): Promise<GameDetails> => {
   const gameDetails = await sendGameDetailsRequest(appid);
   return {
     appid: appid,
@@ -51,7 +51,7 @@ export const updateGamesInDB = async () => {
   let newAppsInserted = 0;
   for (let i = 0; i < allGamesLength; i++) {
     if (i % 10 === 0) console.log(`[updateGamesInDB] ${i + 1} of ${allGamesLength}`);
-    const gameDetails = await getGamesDetails(allGames[i]?.appid);
+    const gameDetails = await getGamesDetailsFromAPI(allGames[i]?.appid);
     if (!!gameDetails?.categories?.length && !!gameDetails?.name && !!gameDetails?.header_image) {
       await dao?.insertGame(gameDetails);
       newGamesInserted++;

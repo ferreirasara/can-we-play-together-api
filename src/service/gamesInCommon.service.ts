@@ -5,6 +5,7 @@ import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
 import { Request, Response } from 'express';
 import DAO from '../dao/DAO';
 import Bugsnag from '@bugsnag/js';
+import { getGamesDetailsFromAPI } from './updateGames.service';
 require("dotenv").config({ path: ".env" });
 
 
@@ -39,10 +40,13 @@ export const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> 
 
   const dao = new DAO();
   for (let i = 0; i < appIds?.length; i++) {
-    const gameDetails = await dao.getGame(appIds[i]);
-    if (gameDetails) details?.push({
+    let gameDetails = await dao.getGame(appIds[i]);
+    if (!gameDetails) {
+      gameDetails = await getGamesDetailsFromAPI(appIds[i]);
+    }
+    details?.push({
       appid: appIds[i],
-      categories: gameDetails?.categories,
+      categories: gameDetails?.categories?.filter(cur => multiplayerCategories?.includes(cur)),
       header_image: gameDetails?.header_image,
       name: gameDetails?.name,
     });
