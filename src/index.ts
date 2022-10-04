@@ -7,6 +7,7 @@ import BugsnagPluginExpress from '@bugsnag/plugin-express';
 import { updateGamesInDB } from "./service/updateGames.service";
 import { statsService } from "./service/stats.service";
 require("dotenv").config({ path: ".env" });
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 if (!process.env.STEAM_API_KEY) {
   console.log("No Steam API key founded.");
