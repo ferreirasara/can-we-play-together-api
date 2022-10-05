@@ -6,7 +6,7 @@ import DAO from '../dao/DAO';
 import { sendSlackReport } from '../utils/utils';
 
 const sendAllGamesRequest = async (): Promise<AllGamesResponse> => {
-  const allGamesUrl = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/?format=json"
+  const allGamesUrl = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
   const response = await fetch(allGamesUrl);
 
   return await response.json();
@@ -59,6 +59,7 @@ export const updateGamesInDB = async () => {
       await dao?.insertApp(allGames[i]);
       newAppsInserted++;
     }
+    setTimeout(() => { }, 500);
   }
   sendSlackReport(`Finish updateGamesInDB. Inserted ${newGamesInserted} games and ${newAppsInserted} apps!`);
   console.log(`[updateGamesInDB] inserted ${newGamesInserted} games and ${newAppsInserted} apps!`)

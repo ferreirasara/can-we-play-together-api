@@ -54,7 +54,7 @@ const port = process.env.PORT || 8080;
 app.listen(port, async () => {
   console.log(`Listening at ${process.env.NODE_ENV !== "production"
     ? `http://localhost:${port}`
-    : "https://can-we-play-together-api.onrender.com"}`);
+    : "https://cwpt-api.herokuapp.com/"}`);
 });
 
 // updateGamesInDB();
