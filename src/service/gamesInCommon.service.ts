@@ -27,30 +27,17 @@ const getAllGamesInCommon = async (userId1: string, userId2: string) => {
   const ownedGamesUser1: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId1);
   const ownedGamesUser2: OwnedGamesResponse | undefined = await sendOwnedGamesRequest(userId2);
 
-  const appIds1 = ownedGamesUser1?.response?.games?.map(cur => cur?.appid);
-  const appIds2 = ownedGamesUser2?.response?.games?.map(cur => cur?.appid);
+  const appids1 = ownedGamesUser1?.response?.games?.map(cur => cur?.appid);
+  const appids2 = ownedGamesUser2?.response?.games?.map(cur => cur?.appid);
 
-  const gamesInCommon = intersection(appIds1, appIds2);
+  const gamesInCommon = intersection(appids1, appids2);
 
   return gamesInCommon;
 }
 
-export const getGamesDetails = async (appIds: number[]): Promise<GameDetails[]> => {
-  const details: GameDetails[] = [];
-
+export const getGamesDetails = async (appids: number[]): Promise<GameDetails[]> => {
   const dao = new DAO();
-  for (let i = 0; i < appIds?.length; i++) {
-    let gameDetails = await dao.getGame(appIds[i]);
-    if (!gameDetails) {
-      gameDetails = await getGamesDetailsFromAPI(appIds[i]);
-    }
-    details?.push({
-      appid: appIds[i],
-      categories: gameDetails?.categories?.filter(cur => multiplayerCategories?.includes(cur)),
-      header_image: gameDetails?.header_image,
-      name: gameDetails?.name,
-    });
-  }
+  const details: GameDetails[] = await dao.getGames(appids);
 
   return details;
 }

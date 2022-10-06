@@ -6,6 +6,7 @@ import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
 import { updateGamesInDB } from "./service/updateGames.service";
 import { statsService } from "./service/stats.service";
+import cron from "node-cron";
 require("dotenv").config({ path: ".env" });
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
@@ -26,9 +27,9 @@ try {
   console.log(error);
 }
 
-// cron.schedule('0 0 * * sun', () => {
-
-// });
+cron.schedule('0 12 * * FRI', () => {
+  updateGamesInDB();
+});
 
 const app: express.Application = express();
 
@@ -56,5 +57,3 @@ app.listen(port, async () => {
     ? `http://localhost:${port}`
     : "https://cwpt-api.herokuapp.com/"}`);
 });
-
-// updateGamesInDB();

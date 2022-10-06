@@ -115,8 +115,21 @@ export default class DAO {
     FROM "Games"
     WHERE "Games"."appid" = $1;
     `;
-    const res = await this.query({ query: gameQuery, values: [appid], caller: "getGame" });
+    const res = await this.query({ query: gameQuery, values: [appid], caller: "gameQuery" });
     return res?.rows[0];
+  }
+
+  public async getGames(appids: number[]): Promise<GameDetails[]> {
+    const gamesQuery = `
+    SELECT "Games"."appid",
+           "Games"."categories",
+           "Games"."header_image",
+           "Games"."name"
+    FROM "Games"
+    WHERE "Games"."appid" IN (${appids?.join(',')});
+    `;
+    const res = await this.query({ query: gamesQuery, caller: "gamesQuery" });
+    return res?.rows || [];
   }
 
   public async getAllGameIds(): Promise<number[]> {
