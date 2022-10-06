@@ -76,9 +76,10 @@ export const gamesInCommonService = async (req: Request, res: Response) => {
 
     const allGamesInCommonDetails = allGamesInCommon ? await getGamesDetails(allGamesInCommon) : undefined;
 
-    const multiplayerGames = allGamesInCommonDetails?.filter(game =>
-      game?.categories?.some(category => multiplayerCategories.includes(category))
-    );
+    const multiplayerGames: GameDetails[] = allGamesInCommonDetails
+      ?.map(game => ({ ...game, categories: game?.categories?.filter(category => multiplayerCategories?.includes(category)) }))
+      ?.filter(game => game?.categories?.length)
+      || []
 
     if (!multiplayerGames?.length) {
       const message = "Could not find multiplayer games."
