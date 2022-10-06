@@ -45,6 +45,8 @@ export const updateGamesInDB = async () => {
   const allGames = allGamesResponse?.applist?.apps?.filter(cur => !!cur?.name && !allExistentAppids?.includes(cur?.appid));
   const allGamesLength = allGames?.length;
 
+  if (allGamesLength === 0) return;
+
   sendSlackReport(`Initializing updateGamesInDB. There are ${allGamesInDB?.length} games and ${allAppsInDB?.length} apps in database. ${allGamesLength} games and app aren't on database.`);
 
   let newGamesInserted = 0;
