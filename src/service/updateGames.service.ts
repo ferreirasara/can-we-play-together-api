@@ -35,6 +35,27 @@ export const getGamesDetailsFromAPI = async (appid: number): Promise<GameDetails
   }
 }
 
+export const verifyApps = async () => {
+  const dao = new DAO();
+  const allAppsInDB = await dao.getAllAppIds();
+
+  sendSlackReport(`Initializing verifyApps. There are ${allAppsInDB?.length} apps in database.`);
+  let newGamesInserted = 0;
+  for (let i = 0; i < allAppsInDB?.length; i++) {
+    if (i % 10 === 0) console.log(`[verifyApps] ${i + 1} of ${allAppsInDB?.length}`);
+    const gameDetails = await getGamesDetailsFromAPI(allAppsInDB[i]);
+    if (!!gameDetails?.categories?.length && !!gameDetails?.name && !!gameDetails?.header_image) {
+      await dao?.insertGame(gameDetails);
+      await dao?.deleteApp(allAppsInDB[i])
+      newGamesInserted++;
+    }
+
+    setTimeout(() => { }, 500);
+  }
+  sendSlackReport(`Finish verifyApps. Inserted ${newGamesInserted} games!`);
+  console.log(`[verifyApps] inserted ${newGamesInserted} games!`)
+}
+
 export const updateGamesInDB = async () => {
   const dao = new DAO();
   const allGamesResponse = await sendAllGamesRequest();

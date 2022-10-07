@@ -86,6 +86,11 @@ export default class DAO {
     await this.query({ query: insertAppQuery, values: insertAppValues, caller: "insertAppQuery" });
   }
 
+  public async deleteApp(appid: number) {
+    const deleteAppQuery = `DELETE FROM "Apps" WHERE "appid" = $1`
+    await this.query({ query: deleteAppQuery, values: [appid], caller: "deleteAppQuery" });
+  }
+
   public async updateGame(args: GameDetails) {
     const { appid, categories, header_image, name } = args;
 

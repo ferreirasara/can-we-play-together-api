@@ -4,7 +4,7 @@ import { gamesInCommonService } from "./service/gamesInCommon.service";
 import DAO from "./dao/DAO";
 import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
-import { updateGamesInDB } from "./service/updateGames.service";
+import { updateGamesInDB, verifyApps } from "./service/updateGames.service";
 import { statsService } from "./service/stats.service";
 import cron from "node-cron";
 require("dotenv").config({ path: ".env" });
@@ -29,6 +29,7 @@ try {
 
 cron.schedule('0 12 * * FRI', () => {
   updateGamesInDB();
+  verifyApps();
 });
 
 const app: express.Application = express();
