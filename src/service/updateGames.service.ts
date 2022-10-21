@@ -15,7 +15,7 @@ const sendAllGamesRequest = async (): Promise<AllGamesResponse> => {
 const sendGameDetailsRequest = async (appid: number): Promise<GameDetailsResponse | undefined> => {
   try {
     const gameDetailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appid}`
-    const response = await fetch(gameDetailsUrl);
+    const response = await fetch(gameDetailsUrl, { timeout: 10000 });
 
     return await response.json();
   } catch (error: any) {
@@ -37,17 +37,19 @@ export const getGamesDetailsFromAPI = async (appid: number): Promise<GameDetails
 
 export const verifyApps = async () => {
   const dao = new DAO();
-  const allAppsInDB = await dao.getAllAppIds();
+  const allNotVerifiedApps = await dao.getAllNotVerifiedAppIds();
 
-  sendSlackReport(`Initializing verifyApps. There are ${allAppsInDB?.length} apps in database.`);
+  sendSlackReport(`Initializing verifyApps. There are ${allNotVerifiedApps?.length} apps in database.`);
   let newGamesInserted = 0;
-  for (let i = 0; i < allAppsInDB?.length; i++) {
-    if (i % 10 === 0) console.log(`[verifyApps] ${i + 1} of ${allAppsInDB?.length}`);
-    const gameDetails = await getGamesDetailsFromAPI(allAppsInDB[i]);
+  for (let i = 0; i < allNotVerifiedApps?.length; i++) {
+    if (i % 10 === 0) console.log(`[verifyApps] ${i + 1} of ${allNotVerifiedApps?.length}`);
+    const gameDetails = await getGamesDetailsFromAPI(allNotVerifiedApps[i]);
     if (!!gameDetails?.categories?.length && !!gameDetails?.name && !!gameDetails?.header_image) {
       await dao?.insertGame(gameDetails);
-      await dao?.deleteApp(allAppsInDB[i])
+      await dao?.deleteApp(allNotVerifiedApps[i])
       newGamesInserted++;
+    } else {
+      await dao.setAppAsVerified(allNotVerifiedApps[i])
     }
 
     setTimeout(() => { }, 500);

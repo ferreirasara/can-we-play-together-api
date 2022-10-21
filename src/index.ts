@@ -6,7 +6,6 @@ import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
 import { updateGamesInDB, verifyApps } from "./service/updateGames.service";
 import { statsService } from "./service/stats.service";
-import cron from "node-cron";
 require("dotenv").config({ path: ".env" });
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
@@ -14,9 +13,6 @@ if (!process.env.STEAM_API_KEY) {
   console.log("No Steam API key founded.");
   process.exit();
 }
-
-const dao = new DAO();
-dao.initializeDB().then().catch(error => console.log(error));
 
 try {
   Bugsnag.start({
@@ -26,11 +22,6 @@ try {
 } catch (error: any) {
   console.log(error);
 }
-
-cron.schedule('0 12 * * FRI', () => {
-  updateGamesInDB();
-  verifyApps();
-});
 
 const app: express.Application = express();
 
@@ -58,3 +49,11 @@ app.listen(port, async () => {
     ? `http://localhost:${port}`
     : "https://cwpt-api.herokuapp.com/"}`);
 });
+
+const dbInit = async () => {
+  const dao = new DAO();
+  await dao.initializeDB().then().catch(error => console.log(error));
+  await updateGamesInDB();
+}
+
+dbInit();

@@ -5,7 +5,7 @@ export default class DAO {
 
   public connect() {
     const connectionString = process.env.DATABASE_URL
-    return new Pool({ connectionString, ssl: true });
+    return new Pool({ connectionString, ssl: true, idleTimeoutMillis: 10000 });
   }
 
   public async query(args: { query: string, values?: any[], caller: string }) {
@@ -33,7 +33,8 @@ export default class DAO {
     const createTableAppsQuery = `
       CREATE TABLE IF NOT EXISTS "Apps" (
         "appid" INT PRIMARY KEY,
-        "name" TEXT
+        "name" TEXT,
+        "isOK" BOOLEAN DEFAULT false
       );
     `
     await this.query({
@@ -108,7 +109,18 @@ export default class DAO {
       name
     ]
 
-    await this.query({ query: updateGameQuery, values: updateGameValues, caller: "insertGameQuery" });
+    await this.query({ query: updateGameQuery, values: updateGameValues, caller: "updateGameQuery" });
+  }
+
+  public async setAppAsVerified(appid: number) {
+    const setAppAsVerifiedQuery = `
+      UPDATE "Apps"
+      SET "isOK" = true
+      WHERE "appid" = $1
+    `
+
+    await this.query({ query: setAppAsVerifiedQuery, values: [appid], caller: "setAppAsVerifiedQuery" });
+
   }
 
   public async getGame(appid: number): Promise<GameDetails> {
@@ -146,6 +158,12 @@ export default class DAO {
   public async getAllAppIds(): Promise<number[]> {
     const allAppIdsQuery = `SELECT "Apps"."appid" FROM "Apps"`;
     const res = await this.query({ query: allAppIdsQuery, caller: "allAppIdsQuery" });
+    return res?.rows?.map((cur: { appid: number }) => cur?.appid) || [];
+  }
+
+  public async getAllNotVerifiedAppIds(): Promise<number[]> {
+    const allNotVerifiedAppIdsQuery = `SELECT "Apps"."appid" FROM "Apps" WHERE "Apps"."isOK" = false ORDER BY "Apps"."appid"`;
+    const res = await this.query({ query: allNotVerifiedAppIdsQuery, caller: "allNotVerifiedAppIdsQuery" });
     return res?.rows?.map((cur: { appid: number }) => cur?.appid) || [];
   }
 
