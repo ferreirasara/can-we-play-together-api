@@ -5,7 +5,6 @@ import { getUserIdFromHTML, multiplayerCategories } from '../utils/utils';
 import { Request, Response } from 'express';
 import DAO from '../dao/DAO';
 import Bugsnag from '@bugsnag/js';
-import { getGamesDetailsFromAPI } from './updateGames.service';
 require("dotenv").config({ path: ".env" });
 
 

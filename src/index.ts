@@ -4,7 +4,7 @@ import { gamesInCommonService } from "./service/gamesInCommon.service";
 import DAO from "./dao/DAO";
 import Bugsnag from '@bugsnag/js';
 import BugsnagPluginExpress from '@bugsnag/plugin-express';
-import { updateGamesInDB, verifyApps } from "./service/updateGames.service";
+import { updateGamesInDB } from "./service/updateGames.service";
 import { statsService } from "./service/stats.service";
 require("dotenv").config({ path: ".env" });
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
