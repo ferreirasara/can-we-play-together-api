@@ -4,7 +4,7 @@ Simple API made with Express that receives two steam usernames and return what g
 
 This API is hosted in https://can-we-play-together.onrender.com/
 
-##How to use
+## How to use
 
 ```
 GET https://can-we-play-together.onrender.com/gamesInCommon/:username1/:username2
