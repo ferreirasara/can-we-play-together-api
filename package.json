@@ -5,6 +5,7 @@
   "scripts": {
     "start": "yarn server",
     "server": "npx ts-node src/index.ts",
+    "updateDB": "npx ts-node src/updateDB.ts",
     "test": "jest --no-cache"
   },
   "repository": "https://github.com/ferreirasara/can-we-play-together-api.git",

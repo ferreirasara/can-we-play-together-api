@@ -16,7 +16,11 @@ export const multiplayerCategories = [
 
 export const getUserIdFromHTML = (html: string): string => {
   if (!html) return '';
-  const id = html?.split('<br>steamID64 (Dec): <code>')[1]?.split('</code>')[0];
+  const id = html
+    ?.replace(/<[^>]*>?/gm, '')
+    ?.split('steamID64 (Dec):')[1]
+    ?.split('steamID64 (Hex):')[0]
+    ?.trim();
   return id;
 }
 

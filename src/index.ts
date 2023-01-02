@@ -53,7 +53,6 @@ app.listen(port, async () => {
 const dbInit = async () => {
   const dao = new DAO();
   await dao.initializeDB().then().catch(error => console.log(error));
-  await updateGamesInDB();
 }
 
 dbInit();
